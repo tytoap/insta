@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        form {
+            margin-top: 50px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Instagram Video Downloader</h1>
+    <form id="downloadForm">
+        <input type="url" id="url" placeholder="Cole o link do Instagram aqui" required>
+        <button type="submit">Download</button>
+    </form>
+    <p id="message"></p>
+    <script>
+        document.getElementById("downloadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const url = document.getElementById("url").value;
+            const message = document.getElementById("message");
+
+            message.textContent = "Baixando...";
+            try {
+                const response = await fetch("/download", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    const downloadUrl = `${location.origin}${data.path}`;
+                    message.innerHTML = `<a href="${downloadUrl}" download>Baixe seu vídeo aqui</a>`;
+                } else {
+                    message.textContent = data.error || "Erro ao baixar o vídeo.";
+                }
+            } catch (err) {
+                message.textContent = "Erro ao processar a solicitação.";
+            }
+        });
+    </script>
+</body>
+</html>
