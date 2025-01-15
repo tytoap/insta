@@ -23,9 +23,6 @@ def extract_shortcode(url):
     return None
     
 
-
-
-
 @app.route('/download1', methods=['POST'])
 def download1():
     data = request.get_json()
@@ -45,9 +42,6 @@ def download1():
     return jsonify({"message": "Processamento simulado para URL", "api_url": api_url})
 
 
-
-
-
 @app.route("/download", methods=["POST"])
 def download_video():
     try:
@@ -57,16 +51,18 @@ def download_video():
             return jsonify({"error": "URL não fornecida"}), 400
 
         instagram_url = data["url"]
-        
+        ######################
         # Extrair o shortcode da URL
-        match = re.search(r"/reel/([^/]+)/", instagram_url)
-        if not match:
-            return jsonify({"error": "URL inválida ou shortcode não encontrado"}), 400
-        
-        shortcode = match.group(1)
-        api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
 
-        # Requisição à API do Instagram
+        shortcode = extract_shortcode(instagram_url)
+        if not shortcode:
+        return jsonify({"error": "Shortcode não encontrado na URL"}), 400
+
+        # Construa a URL esperada pela biblioteca
+        api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
+        
+     
+       # Requisição à API do Instagram
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
