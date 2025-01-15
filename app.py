@@ -15,6 +15,37 @@ os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 @app.route("/")
 def index():
     return render_template("index.html")
+def extract_shortcode(url):
+    """Extrai o shortcode da URL do Instagram."""
+    match = re.search(r'/reel/([^/]+)/', url)
+    if match:
+        return match.group(1)
+    return None
+    
+
+
+
+
+@app.route('/download1', methods=['POST'])
+def download1():
+    data = request.get_json()
+    url = data.get("url")
+    
+    if not url:
+        return jsonify({"error": "URL inválida"}), 400
+    
+    shortcode = extract_shortcode(url)
+    if not shortcode:
+        return jsonify({"error": "Shortcode não encontrado na URL"}), 400
+
+    # Construa a URL esperada pela biblioteca
+    api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
+    
+    # Simulação de processamento (substitua com sua lógica real)
+    return jsonify({"message": "Processamento simulado para URL", "api_url": api_url})
+
+
+
 
 
 @app.route("/download", methods=["POST"])
