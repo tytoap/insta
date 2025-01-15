@@ -56,7 +56,7 @@ def download_video():
 
         shortcode = extract_shortcode(instagram_url)
         if not shortcode:
-        return jsonify({"error": "Shortcode não encontrado na URL"}), 400
+            return jsonify({"error": "Shortcode não encontrado na URL"}), 400
 
         # Construa a URL esperada pela biblioteca
         api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
