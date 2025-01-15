@@ -62,6 +62,13 @@ def download_video():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/ping', methods=['POST'])
+def ping():
+    data = request.get_json()
+    if data and data.get("message") == "ping":
+        return jsonify({"response": "pong"}), 200
+    return jsonify({"error": "Invalid message"}), 400
+
 
 @app.route("/download/<shortcode>")
 def serve_video(shortcode):
