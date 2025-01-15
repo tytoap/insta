@@ -7,7 +7,7 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
-# Diretório para salvar os vídeosd
+# Diretório para salvar os vídeos
 DOWNLOADS_DIR = os.path.join(os.getcwd(), "downloads")
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
@@ -15,41 +15,6 @@ os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 @app.route("/")
 def index():
     return render_template("index.html")
-def extract_shortcode(url):
-    """Extrai o shortcode da URL do Instagram."""
-    match = re.search(r'/reel/([^/]+)/', url)
-    if match:
-        return match.group(1)
-    return None
-    
-
-@app.route('/download1', methods=['POST'])
-def download_video():
-    try:
-        url = request.json.get('url')
-        if not url:
-            return jsonify({'error': 'URL is required'}), 400
-        # Extract post shortcode from URL
-        shortcode = url.split('/')[-2]
-        # Create a temporary directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Initialize Instaloader
-            L = instaloader.Instaloader(dirname_pattern=temp_dir)
-            
-            # Download the post
-            post = instaloader.Post.from_shortcode(L.context, shortcode)
-            L.download_post(post, target=temp_dir)
-            # Find the video file
-            video_file = None
-            for file in os.listdir(temp_dir):
-                if file.endswith('.mp4'):
-                    video_file = os.path.join(temp_dir, file)
-                    break
-            if not video_file:
-                return jsonify({'error': 'No video found'}), 404
-            return send_file(video_file, as_attachment=True)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 
 @app.route("/download", methods=["POST"])
@@ -61,18 +26,16 @@ def download_video():
             return jsonify({"error": "URL não fornecida"}), 400
 
         instagram_url = data["url"]
-        ######################
-        # Extrair o shortcode da URL
-
-        shortcode = extract_shortcode(instagram_url)
-        if not shortcode:
-            return jsonify({"error": "Shortcode não encontrado na URL"}), 400
-
-        # Construa a URL esperada pela biblioteca
-        api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
         
-     
-       # Requisição à API do Instagram
+        # Extrair o shortcode da URL
+        match = re.search(r"/reel/([^/]+)/", instagram_url)
+        if not match:
+            return jsonify({"error": "URL inválida ou shortcode não encontrado"}), 400
+        
+        shortcode = match.group(1)
+        api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
+
+        # Requisição à API do Instagram
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -98,13 +61,6 @@ def download_video():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/ping', methods=['POST'])
-def ping():
-    data = request.get_json()
-    if data and data.get("message") == "ping":
-        return jsonify({"response": "pong"}), 200
-    return jsonify({"error": "Invalid message"}), 400
 
 
 @app.route("/download/<shortcode>")
