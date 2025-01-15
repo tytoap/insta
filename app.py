@@ -24,22 +24,32 @@ def extract_shortcode(url):
     
 
 @app.route('/download1', methods=['POST'])
-def download1():
-    data = request.get_json()
-    url = data.get("url")
-    
-    if not url:
-        return jsonify({"error": "URL inválida"}), 400
-    
-    shortcode = extract_shortcode(url)
-    if not shortcode:
-        return jsonify({"error": "Shortcode não encontrado na URL"}), 400
-
-    # Construa a URL esperada pela biblioteca
-    api_url = f"https://www.instagram.com/p/{shortcode}/?__a=1&__d=dis"
-    
-    # Simulação de processamento (substitua com sua lógica real)
-    return jsonify({"message": "Processamento simulado para URL", "api_url": api_url})
+def download_video():
+    try:
+        url = request.json.get('url')
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
+        # Extract post shortcode from URL
+        shortcode = url.split('/')[-2]
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Initialize Instaloader
+            L = instaloader.Instaloader(dirname_pattern=temp_dir)
+            
+            # Download the post
+            post = instaloader.Post.from_shortcode(L.context, shortcode)
+            L.download_post(post, target=temp_dir)
+            # Find the video file
+            video_file = None
+            for file in os.listdir(temp_dir):
+                if file.endswith('.mp4'):
+                    video_file = os.path.join(temp_dir, file)
+                    break
+            if not video_file:
+                return jsonify({'error': 'No video found'}), 404
+            return send_file(video_file, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route("/download", methods=["POST"])
