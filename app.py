@@ -7,7 +7,7 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
-# Diretório para salvar os vídeos
+# Diretório para salvar os vídeosd
 DOWNLOADS_DIR = os.path.join(os.getcwd(), "downloads")
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
